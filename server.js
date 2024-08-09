@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const colors = require('colors');
 const cors = require('cors');
+const userRoutes = require('./routes/userRoutes');
 const { notFound, errorHandler } = require('./middlewares/errorMiddleware');
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(cors({
 app.use(express.json());
 const PORT = process.env.PORT || 5000;
 
+app.use("/user", userRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
