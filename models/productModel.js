@@ -1,3 +1,5 @@
+const mongoose = require("mongoose");
+
 const productModel = new mongoose.Schema(
     {
       name: { type: String, trim: true },
