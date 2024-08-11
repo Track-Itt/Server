@@ -14,16 +14,9 @@ const productTransferModel = new mongoose.Schema(
     },
     productsTransferred: [
       {
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-          required: true,
-        },
-        quantity: {
-          type: Number,
-          required: true,
-          min: [1, "At least one product must be transferred"],
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+        required: true,
       },
     ],
     deliveredByEmployeeId: {
