@@ -18,15 +18,27 @@ const addProduct=asyncHandler(async(req,res)=>{
             cost:cost,
             productCategory:productCategory,
         }
-        if(!newProduct){
-            return res.status(400).json("Couldn't add product!");
+
+        var category=await Category.findById(productCategory);
+        if(!category){
+            return res.status(400).json("Category doesn't exist!");
         }
         var product=await Product.create(newProduct);
+        if(!product){
+            return res.status(400).json("Couldn't add product!");
+        }
+        product = await product.populate("productCategory").execPopulate();
+        product = await Product.populate(product, {
+            path: "productCategory.products",
+            select: "name count cost"
+        });
+
         await Category.findOneAndUpdate(
-            { name: productCategory }, 
+            { _id: productCategory }, 
             { $push: { products: product._id } }
         );
-        res.status(200).json(newProduct);
+
+        res.status(200).json(product);
     }catch(error){
         res.status(400).json(error.message);
     }
