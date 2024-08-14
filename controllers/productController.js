@@ -101,4 +101,29 @@ const updateProductCount=asyncHandler(async(req,res)=>{
         res.status(400).json(error.message);
     }
 })
-module.exports={addProduct,updateProductCount};
+
+const renameProduct=asyncHandler(async(req,res)=>{
+    const {name,productId}=req.body;
+    if(!productId || !name){
+        return res.status(400).json("Please Fill all the fields!");
+    }
+    try{
+        var product=await Product.findById(productId);
+        if(!product){
+            return res.status(400).json("Product doesn't exist!");
+        }
+        if(product.name==name){
+            return res.status(400).json("Name is same as current name!");
+        }
+        product=await Product.findByIdAndUpdate(
+            productId,
+            { name:name },
+            { new: true }
+        );
+        res.status(200).json(product);
+    }catch(error){
+        res.status(400).json(error.message);
+    }
+})
+
+module.exports={addProduct,updateProductCount,renameProduct};
