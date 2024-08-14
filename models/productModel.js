@@ -24,6 +24,11 @@ const productModel = new mongoose.Schema(
       ref: "Category", 
       required: [true, "ProductCategory is required"],
     },
+    inventory:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Inventory",
+      required: [true, "Inventory is required"],
+    }
   },
   {
     timestamps: true,
