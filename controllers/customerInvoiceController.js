@@ -71,5 +71,21 @@ const getInvoiceById = asyncHandler(async (req, res) => {
 });
 
 
+const getAllInvoices = asyncHandler(async (req, res) => {
+    try {
+        const invoices = await CustomerInvoice.find({})
+            .populate('inventory')
+            .populate({
+                path: 'products.product',
+                select: 'name count cost'
+            });
 
-module.exports={addInvoice,getInvoiceById};
+        res.status(200).json(invoices);
+    } catch (error) {
+        res.status(400).json(error.message);
+    }
+});
+
+
+
+module.exports={addInvoice,getInvoiceById,getAllInvoices};
