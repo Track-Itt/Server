@@ -126,4 +126,59 @@ const renameProduct=asyncHandler(async(req,res)=>{
     }
 })
 
-module.exports={addProduct,updateProductCount,renameProduct};
+const changeProductCategory = asyncHandler(async (req, res) => {
+    const { categoryId, productId } = req.body;
+
+    if (!productId || !categoryId) {
+        return res.status(400).json("Please fill all the fields!");
+    }
+
+    try {
+
+        var product = await Product.findById(productId);
+        if (!product) {
+            return res.status(400).json("Product doesn't exist!");
+        }
+
+
+        var newCategory = await Category.findById(categoryId);
+        if (!newCategory) {
+            return res.status(400).json("Category doesn't exist!");
+        }
+
+        if(categoryId==product.productCategory){
+            return res.status(400).json("Current category is same as newCategory!!");
+        }
+        await Category.findByIdAndUpdate(
+            product.productCategory,
+            { $pull: { products: productId } }
+        );
+
+
+        product.productCategory = categoryId;
+        await product.save();
+
+        await Category.findByIdAndUpdate(
+            categoryId,
+            { $push: { products: productId } }
+        );
+
+
+        product = await Product.findById(productId)
+            .populate("productCategory")
+            .populate({
+                path: 'inventory',
+                populate: {
+                    path: 'products',
+                    select: 'name count cost _id',
+                }
+            });
+
+        res.status(200).json(product);
+    } catch (error) {
+        res.status(400).json(error.message);
+    }
+});
+
+
+module.exports={addProduct,updateProductCount,renameProduct,changeProductCategory};
