@@ -5,18 +5,18 @@ const productTransferModel = new mongoose.Schema(
     from: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Warehouse",
-      required: true,
+      required: [true, "from location is required"],
     },
     to: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Inventory",
-      required: true,
+      required: [true, "to location is required"],
     },
     productsTransferred: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Product",
-        required: true,
+        required: [true, "products are required"],
       },
     ],
     deliveredByEmployeeId: {

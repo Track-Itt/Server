@@ -14,11 +14,13 @@ const customerInvoiceModel = new mongoose.Schema(
     },
     inventory: {
       type: mongoose.Schema.Types.ObjectId,
+      required: [true, "inventory is required"],
       ref: "Inventory"
     },
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,
+        required: [true, "products are required"],
         ref: "Product"
       }
     ],
