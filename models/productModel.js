@@ -5,7 +5,6 @@ const productModel = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "ProductName is required"],
-      unique: true,
       trim: true,
       lowercase: true,
     },

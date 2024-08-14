@@ -25,4 +25,17 @@ const addInventory=asyncHandler(async(req,res)=>{
     }
 })
 
-module.exports={addInventory};
+const fetchAllInventories = asyncHandler(async (req, res) => {
+    try {
+        const inventories = await Inventory.find().populate({
+            path: "products",
+            select: "name count cost _id",
+        });
+
+        res.status(200).json(inventories);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+module.exports={addInventory,fetchAllInventories};
