@@ -86,6 +86,27 @@ const getAllInvoices = asyncHandler(async (req, res) => {
     }
 });
 
+const getAllInvoicesForInventory = asyncHandler(async (req, res) => {
+    const { inventoryId } = req.params;
+
+    try {
+        const invoices = await CustomerInvoice.find({ inventory: inventoryId })
+            .populate('inventory')
+            .populate({
+                path: 'products.product',
+                select: 'name count cost'
+            });
+
+        if (!invoices || invoices.length === 0) {
+            return res.status(404).json("No invoices found for this inventory.");
+        }
+
+        res.status(200).json(invoices);
+    } catch (error) {
+        res.status(400).json(error.message);
+    }
+});
 
 
-module.exports={addInvoice,getInvoiceById,getAllInvoices};
+
+module.exports={addInvoice,getInvoiceById,getAllInvoices,getAllInvoicesForInventory};
