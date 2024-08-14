@@ -46,4 +46,17 @@ const fetchCategory=asyncHandler(async(req,res)=>{
     }
 })
 
-module.exports={addCategory,fetchCategory};
+const fetchAllCategories = asyncHandler(async (req, res) => {
+    try {
+        const categories = await Category.find().populate({
+            path: "products",
+            select: "name count cost _id",
+        });
+
+        res.status(200).json(categories);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+module.exports={addCategory,fetchCategory,fetchAllCategories};

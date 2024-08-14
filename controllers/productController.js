@@ -28,20 +28,17 @@ const addProduct=asyncHandler(async(req,res)=>{
             return res.status(400).json("Couldn't add product!");
         }
         
-        // fix populate 
+        await Category.findOneAndUpdate(
+            { _id: productCategory },
+            { $push: { products: product._id } }
+        );
+                // fix populate 
         product = await Product.findById(product._id)
         .populate("productCategory")
         .populate({
             path: 'productCategory.products',
             select: 'name count cost _id ',
         });
-
-
-        await Category.findOneAndUpdate(
-            { _id: productCategory },
-            { $push: { products: product._id } }
-        );
-
         res.status(200).json(product);
     }catch(error){
         res.status(400).json(error.message);
