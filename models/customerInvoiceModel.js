@@ -14,14 +14,25 @@ const customerInvoiceModel = new mongoose.Schema(
     },
     inventory: {
       type: mongoose.Schema.Types.ObjectId,
-      required: [true, "inventory is required"],
+      required: [true, "Inventory is required"],
       ref: "Inventory"
     },
     products: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        required: [true, "products are required"],
-        ref: "Product"
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: [true, "Product ID is required"],
+          ref: "Product"
+        },
+        quantity: {
+          type: Number,
+          required: [true, "Quantity is required"],
+          min: [1, "Quantity must be at least 1"]
+        },
+        cost: {
+          type: Number,
+          required: [true, "Cost is required"],
+        },
       }
     ],
     totalCost: {
