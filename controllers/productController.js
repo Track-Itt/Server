@@ -1,49 +1,71 @@
 const Product = require("../models/productModel");
 const Category=require("../models/categoryModel");
 const asyncHandler = require("express-async-handler");
+const Inventory = require("../models/inventoryModel");
 
-const addProduct=asyncHandler(async(req,res)=>{
-    const {name,count,cost,productCategory}=req.body;
-    if(!name || !count || !cost || !productCategory){
-        return res.status(400).json("Please Fill all the fields");
+const addProduct = asyncHandler(async (req, res) => {
+    const { name, count, cost, productCategory, inventory } = req.body;
+
+    if (!name || !count || !cost || !productCategory || !inventory) {
+        return res.status(400).json("Please fill all the fields");
     }
-    try{
-        var isProduct= await Product.findOne({name:name,productCategory:productCategory});
-        if(isProduct){
-            return res.status(400).json("product already exists!");
-        }
-        var newProduct={
-            name:name,
-            count:count,
-            cost:cost,
-            productCategory:productCategory,
+
+    try {
+        var isProduct = await Product.findOne({ name, productCategory, inventory });
+        if (isProduct) {
+            return res.status(400).json("Product already exists!");
         }
 
-        var category=await Category.findById(productCategory);
-        if(!category){
+        var newProduct = {
+            name,
+            count,
+            cost,
+            productCategory,
+            inventory,
+        };
+
+        var category = await Category.findById(productCategory);
+        if (!category) {
             return res.status(400).json("Category doesn't exist!");
         }
-        var product=await Product.create(newProduct);
-        if(!product){
+
+        var isInventory = await Inventory.findById(inventory);
+        if (!isInventory) {
+            return res.status(400).json("Inventory doesn't exist!");
+        }
+
+        var product = await Product.create(newProduct);
+        if (!product) {
             return res.status(400).json("Couldn't add product!");
         }
-        
+
         await Category.findOneAndUpdate(
             { _id: productCategory },
             { $push: { products: product._id } }
         );
-                // fix populate 
+
+        await Inventory.findByIdAndUpdate(
+            { _id: inventory },
+            { $push: { products: product._id } }
+        );
+
+
         product = await Product.findById(product._id)
-        .populate("productCategory")
-        .populate({
-            path: 'productCategory.products',
-            select: 'name count cost _id ',
-        });
+            .populate("productCategory")
+            .populate({
+                path: 'inventory', 
+                populate: {
+                    path: 'products', 
+                    select: 'name count cost _id',
+                }
+            });
+
         res.status(200).json(product);
-    }catch(error){
+    } catch (error) {
         res.status(400).json(error.message);
     }
-})
+});
+
 const updateProductCount=asyncHandler(async(req,res)=>{
     const {productId,operation,count}=req.body;
     if(!productId || !operation || !count){

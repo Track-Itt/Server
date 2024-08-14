@@ -4,7 +4,7 @@ const inventoryModel = new mongoose.Schema(
   {
     location: {
       type: String,
-      required: [true, "CategoryName is required"],
+      required: [true, "Location is required"],
       unique: true,
       trim: true,
       lowercase: true,
