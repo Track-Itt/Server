@@ -24,3 +24,5 @@ const addCategory=asyncHandler(async(req,res)=>{
         res.status(400).json(error.message);
     }
 })
+
+module.exports={addCategory};

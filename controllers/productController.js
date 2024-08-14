@@ -5,7 +5,7 @@ const asyncHandler = require("express-async-handler");
 const addProduct=asyncHandler(async(req,res)=>{
     const {name,count,cost,productCategory}=req.body;
     if(!name || !count || !cost || !productCategory){
-        return res.status(400).json("Please Fill all the feilds");
+        return res.status(400).json("Please Fill all the fields");
     }
     try{
         var isProduct= await Product.findOne({name:name,productCategory:productCategory});
@@ -27,14 +27,18 @@ const addProduct=asyncHandler(async(req,res)=>{
         if(!product){
             return res.status(400).json("Couldn't add product!");
         }
-        product = await product.populate("productCategory").execPopulate();
-        product = await Product.populate(product, {
-            path: "productCategory.products",
-            select: "name count cost"
+        
+        // fix populate 
+        product = await Product.findById(product._id)
+        .populate("productCategory")
+        .populate({
+            path: 'productCategory.products',
+            select: 'name count cost _id ',
         });
 
+
         await Category.findOneAndUpdate(
-            { _id: productCategory }, 
+            { _id: productCategory },
             { $push: { products: product._id } }
         );
 
@@ -43,3 +47,5 @@ const addProduct=asyncHandler(async(req,res)=>{
         res.status(400).json(error.message);
     }
 })
+
+module.exports={addProduct};
