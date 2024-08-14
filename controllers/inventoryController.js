@@ -38,4 +38,27 @@ const fetchAllInventories = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports={addInventory,fetchAllInventories};
+const renameInventory = asyncHandler(async (req, res) => {
+    const {location,inventory}=req.body;
+    if(!inventory || !location){
+        return res.status(400).json("Please Fill all the feilds");
+    }
+    try {
+        var inventories=await Inventory.findByIdAndUpdate(
+        inventory,
+        {
+            location:location,
+        },
+        { new: true }
+        ).populate({
+            path: "products",
+            select: "name count cost _id",
+        });
+
+        res.status(200).json(inventories);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+module.exports={addInventory,fetchAllInventories,renameInventory};
