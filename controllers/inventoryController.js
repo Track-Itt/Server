@@ -44,7 +44,8 @@ const addAllInventory = asyncHandler(async (req, res) => {
 
             const isInventory = await Inventory.findOne({ location: location });
             if (isInventory) {
-                return res.status(400).json(`Inventory at location ${location} already exists!`);
+                // return res.status(400).json(`Inventory at location ${location} already exists!`);
+                continue;
             }
 
             const newInventory = {
