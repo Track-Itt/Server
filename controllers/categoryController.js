@@ -26,6 +26,38 @@ const addCategory=asyncHandler(async(req,res)=>{
     }
 })
 
+const addAllCategory = asyncHandler(async (req, res) => {
+    const { names } = req.body; // expecting an array of objects with the format [{ name: "category1" }, { name: "category2" }]
+    if (!names || !Array.isArray(names) || names.length === 0) {
+        return res.status(400).json("Please provide an array of category objects.");
+    }
+    try {
+        let addedCategories = [];
+        for (const categoryObj of names) {
+            const { name } = categoryObj;
+            if (!name) {
+                continue; // Skip if the name is not provided
+            }
+            var isCategory = await Category.findOne({ name: name });
+            if (!isCategory) {
+                var newCategory = { name: name };
+                var category = await Category.create(newCategory);
+                if (category) {
+                    addedCategories.push(category);
+                }
+            }
+        }
+        if (addedCategories.length === 0) {
+            return res.status(400).json("No new categories were added.");
+        }
+        res.status(200).json(addedCategories);
+    } catch (error) {
+        res.status(400).json(error.message);
+    }
+});
+
+
+
 const fetchCategory=asyncHandler(async(req,res)=>{
     const {categoryId}=req.params;
     if(!categoryId){
@@ -59,4 +91,4 @@ const fetchAllCategories = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports={addCategory,fetchCategory,fetchAllCategories};
+module.exports={addCategory,fetchCategory,fetchAllCategories,addAllCategory};
