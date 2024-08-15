@@ -78,5 +78,62 @@ const getProductTransferById = asyncHandler(async (req, res) => {
     }
 });
 
+const addAllProductTransfers = asyncHandler(async (req, res) => {
+    const { transfers } = req.body; // expecting an array of product transfer objects
 
-module.exports={getAllProductTransfers,getProductTransferById,addProductTransfer};
+    if (!transfers || !Array.isArray(transfers) || transfers.length === 0) {
+        return res.status(400).json("Please provide an array of product transfer objects.");
+    }
+
+    try {
+        let addedTransfers = [];
+
+        for (const transferData of transfers) {
+            const { from, to, productsTransferred, deliveredByEmployeeId, receivedByEmployeeId, vehicleNumber } = transferData;
+
+            if (!from || !to || !productsTransferred || !deliveredByEmployeeId || !receivedByEmployeeId || !vehicleNumber) {
+                continue; // Skip if any required field is missing
+            }
+
+            const warehouse = await Warehouse.findById(from);
+            if (!warehouse) {
+                continue; // Skip if the warehouse does not exist
+            }
+
+            const inventory = await Inventory.findById(to);
+            if (!inventory) {
+                continue; // Skip if the inventory does not exist
+            }
+
+            for (const productId of productsTransferred) {
+                const product = await Product.findById(productId);
+                if (!product) {
+                    continue; // Skip if any product does not exist
+                }
+            }
+
+            const productTransfer = await ProductTransfer.create({
+                from,
+                to,
+                productsTransferred,
+                deliveredByEmployeeId,
+                receivedByEmployeeId,
+                vehicleNumber,
+            });
+
+            if (productTransfer) {
+                addedTransfers.push(productTransfer);
+            }
+        }
+
+        if (addedTransfers.length === 0) {
+            return res.status(400).json("No new product transfers were added.");
+        }
+
+        res.status(201).json(addedTransfers);
+    } catch (error) {
+        res.status(400).json(error.message);
+    }
+});
+
+module.exports={getAllProductTransfers,getProductTransferById,addProductTransfer,addAllProductTransfers};
