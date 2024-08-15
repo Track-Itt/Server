@@ -10,6 +10,7 @@ const productRoutes=require('./routes/productRoutes');
 const productTransferRoutes = require('./routes/productTransferRoutes');
 const userRoutes = require('./routes/userRoutes');
 const warehouseRoutes = require('./routes/warehouseRoutes');
+const chartRoutes=require('./routes/chartRoutes');
 
 const { notFound, errorHandler } = require('./middlewares/errorMiddleware');
 
@@ -32,7 +33,7 @@ app.use("/customerInvoice", customerInvoiceRoutes);
 app.use("/inventory", inventoryRoutes);
 app.use("/warehouse", warehouseRoutes);
 app.use("/productTransfer", productTransferRoutes);
-
+app.use("/chart", chartRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
