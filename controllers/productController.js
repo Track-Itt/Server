@@ -342,5 +342,23 @@ const changeProductCategory = asyncHandler(async (req, res) => {
     }
 });
 
+const fetchAllProducts=asyncHandler(async(req,res)=>{
+    try {
+        const products = await Product.find().populate().select("_id");
 
-module.exports={addProduct,updateProductCount,renameProduct,changeProductCategory,addAllProducts,addAllProductsInAllInventories};
+        res.status(200).json(products);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+})
+
+
+module.exports=
+{   addProduct,
+    updateProductCount,
+    renameProduct,
+    changeProductCategory,
+    addAllProducts,
+    addAllProductsInAllInventories,
+    fetchAllProducts
+};

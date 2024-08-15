@@ -68,14 +68,16 @@ const addAllInvoices = asyncHandler(async (req, res) => {
 
             const existingInventory = await Inventory.findById(inventory);
             if (!existingInventory) {
-                return res.status(404).json(`Inventory with ID ${inventory} not found.`);
+                continue;
+                // return res.status(404).json(`Inventory with ID ${inventory} not found.`);
             }
 
             let totalCost = 0;
             for (const item of products) {
                 const product = await Product.findById(item.product);
                 if (!product) {
-                    return res.status(404).json(`Product with ID ${item.product} not found.`);
+                    continue;
+                    // return res.status(404).json(`Product with ID ${item.product} not found.`);
                 }
                 if (product.count < item.quantity) {
                     return res.status(400).json(`Insufficient stock for product: ${product.name}.`);

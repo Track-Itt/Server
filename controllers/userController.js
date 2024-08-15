@@ -80,5 +80,18 @@ const allUsers=asyncHandler(async(req,res)=>{
 
 });
 
+const retrieveUserByEmployeeId=asyncHandler(async(req,res)=>{
+    const {id}=req.params;
+    try {
+        const user=await User.findOne({employeeId:id}).select("-password");
+        if(!user){
+            return res.status(400).json("employeeId doesnt exist!");
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+})
 
-module.exports = { registerUser,authUser,allUsers };
+
+module.exports = { registerUser,authUser,allUsers,retrieveUserByEmployeeId };
