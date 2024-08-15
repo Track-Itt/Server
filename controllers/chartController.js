@@ -109,8 +109,25 @@ const lineChart = asyncHandler(async (req, res) => {
     }
 });
 
+const invoicesTable = asyncHandler(async (req, res) => {
+    try {
+
+        const invoices = await CustomerInvoice.find({}) 
+
+        const formattedInvoices = invoices.map((invoice, index) => ({
+            id: index + 1, 
+            name: invoice.name, 
+            email: invoice.email, 
+            cost: invoice.totalCost, 
+            date: new Date(invoice.createdAt).toLocaleDateString("en-US") 
+        }));
+
+        res.status(200).json(formattedInvoices);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
 
 
 
-
-module.exports={pieChart,lineChart};
+module.exports={pieChart,lineChart,invoicesTable};
