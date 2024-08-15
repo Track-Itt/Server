@@ -66,6 +66,84 @@ const addProduct = asyncHandler(async (req, res) => {
     }
 });
 
+const addAllProducts = asyncHandler(async (req, res) => {
+    const { products } = req.body; // expecting an array of product objects
+
+    if (!products || !Array.isArray(products) || products.length === 0) {
+        return res.status(400).json("Please provide an array of product objects.");
+    }
+
+    try {
+        let addedProducts = [];
+
+        for (const productData of products) {
+            const { name, count, cost, productCategory, inventory } = productData;
+
+            if (!name || !count || !cost || !productCategory || !inventory) {
+                continue; // Skip the product if any required field is missing
+            }
+
+            var isProduct = await Product.findOne({ name, productCategory, inventory });
+            if (isProduct) {
+                continue; // Skip if the product already exists
+            }
+
+            var category = await Category.findById(productCategory);
+            if (!category) {
+                continue; // Skip if the category doesn't exist
+            }
+
+            var isInventory = await Inventory.findById(inventory);
+            if (!isInventory) {
+                continue; // Skip if the inventory doesn't exist
+            }
+
+            var newProduct = {
+                name,
+                count,
+                cost,
+                productCategory,
+                inventory,
+            };
+
+            var product = await Product.create(newProduct);
+            if (product) {
+                await Category.findByIdAndUpdate(
+                    { _id: productCategory },
+                    { $push: { products: product._id } }
+                );
+
+                await Inventory.findByIdAndUpdate(
+                    { _id: inventory },
+                    { $push: { products: product._id } }
+                );
+
+                // Populate the newly created product
+                product = await Product.findById(product._id)
+                    .populate("productCategory")
+                    .populate({
+                        path: 'inventory', 
+                        populate: {
+                            path: 'products', 
+                            select: 'name count cost _id',
+                        }
+                    });
+
+                addedProducts.push(product);
+            }
+        }
+
+        if (addedProducts.length === 0) {
+            return res.status(400).json("No new products were added.");
+        }
+
+        res.status(200).json(addedProducts);
+    } catch (error) {
+        res.status(400).json(error.message);
+    }
+});
+
+
 const updateProductCount=asyncHandler(async(req,res)=>{
     const {productId,operation,count}=req.body;
     if(!productId || !operation || !count){
@@ -181,4 +259,4 @@ const changeProductCategory = asyncHandler(async (req, res) => {
 });
 
 
-module.exports={addProduct,updateProductCount,renameProduct,changeProductCategory};
+module.exports={addProduct,updateProductCount,renameProduct,changeProductCategory,addAllProducts};
