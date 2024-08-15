@@ -1,9 +1,10 @@
 const Category=require("../models/categoryModel");
 const Product=require("../models/productModel");
 const CustomerInvoice=require("../models/customerInvoiceModel");
+const Inventory=require("../models/inventoryModel");
 const asyncHandler = require("express-async-handler");
 
-const pieChartController = asyncHandler(async (req, res) => {
+const pieChart = asyncHandler(async (req, res) => {
     try {
         // Step 1: Aggregate the data
         const invoices = await CustomerInvoice.find().populate({
@@ -40,7 +41,7 @@ const pieChartController = asyncHandler(async (req, res) => {
         categoryData.sort((a, b) => b.total - a.total);
 
         // Step 3: Send the top 5 categories
-        const top5Categories = categoryData.slice(0, 5);
+        const top5Categories = categoryData.slice(0, 6);
         res.status(200).json(top5Categories);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -48,5 +49,68 @@ const pieChartController = asyncHandler(async (req, res) => {
 });
 
 
+const lineChart = asyncHandler(async (req, res) => {
+    try {
+        // Fetch the top 5 inventories with the most sales
+        const topInventories = await CustomerInvoice.aggregate([
+            {
+                $group: {
+                    _id: "$inventory",
+                    totalSales: { $sum: "$totalCost" }
+                }
+            },
+            { $sort: { totalSales: -1 } }, // Sort by total sales in descending order
+            { $limit: 5 }, // Limit to top 5 inventories
+        ]);
 
-module.exports={pieChartController};
+        // Populate the necessary fields
+        const inventoryDetails = await Inventory.populate(topInventories, {
+            path: "_id",
+            select: "location products",
+            populate: {
+                path: "products",
+                select: "productCategory",
+                populate: {
+                    path: "productCategory",
+                    select: "name"
+                }
+            }
+        });
+
+        // Prepare the final data structure
+        const result = inventoryDetails.map((inventory) => {
+            // Group by category and calculate total sales per category
+            const categorySales = inventory._id.products.reduce((acc, product) => {
+                if (product && product.productCategory) {
+                    const categoryName = product.productCategory.name;
+                    if (!acc[categoryName]) {
+                        acc[categoryName] = 0;
+                    }
+                    acc[categoryName] += inventory.totalSales;
+                }
+                return acc;
+            }, {});
+
+            // Convert the category sales object to an array
+            const data = Object.entries(categorySales).map(([category, sales]) => ({
+                category,
+                sales
+            })).sort((a, b) => a.category.localeCompare(b.category));
+
+            return {
+                location: inventory._id.location,
+                data
+            };
+        });
+
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+
+
+
+
+module.exports={pieChart,lineChart};
