@@ -138,4 +138,30 @@ const addAllProductTransfers = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports={getAllProductTransfers,getProductTransferById,addProductTransfer,addAllProductTransfers};
+const completeProductTransfer = asyncHandler(async (req, res) => {
+    const { transferId, receivedByEmployeeId } = req.body;
+
+    if (!transferId || !receivedByEmployeeId) {
+        return res.status(400).json("Please provide transferId and receivedByEmployeeId.");
+    }
+
+    try {
+        const productTransfer = await ProductTransfer.findById(transferId);
+
+        if (!productTransfer) {
+            return res.status(404).json("Product transfer not found.");
+        }
+
+        if (productTransfer.receivedByEmployeeId !== receivedByEmployeeId) {
+            return res.status(403).json("Received Employee ID does not match.");
+        }
+
+        await ProductTransfer.findByIdAndDelete(transferId);
+
+        res.status(200).json("Product transfer completed successfully.");
+    } catch (error) {
+        res.status(400).json(error.message);
+    }
+});
+
+module.exports={getAllProductTransfers,getProductTransferById,addProductTransfer,addAllProductTransfers, completeProductTransfer};
