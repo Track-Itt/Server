@@ -62,4 +62,13 @@ const addWarehouses = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports={addWarehouse};
+const fetchAllWarehouses = asyncHandler(async (req, res) => {
+    try {
+        const warehouses = await Warehouse.find();
+        res.status(200).json(warehouses);
+    } catch (error) {
+        res.status(400).json(error.message);
+    }
+});
+
+module.exports={addWarehouse, addWarehouses, fetchAllWarehouses};

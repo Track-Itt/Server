@@ -342,16 +342,41 @@ const changeProductCategory = asyncHandler(async (req, res) => {
     }
 });
 
-const fetchAllProducts=asyncHandler(async(req,res)=>{
-    try {
-        const products = await Product.find().populate().select("_id");
+const fetchAllProducts = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10, category, inventory, searchTerm } = req.query;
 
-        res.status(200).json(products);
+    const query = {};
+
+    if (category) {
+        query.productCategory = category;
+    }
+
+    if (inventory) {
+        query.inventory = inventory;
+    }
+
+    if (searchTerm) {
+        query.name = { $regex: searchTerm, $options: 'i' };
+    }
+
+    try {
+        const products = await Product.find(query)
+            .populate("productCategory", "name")
+            .populate("inventory", "location")
+            .skip((page - 1) * limit)
+            .limit(parseInt(limit));
+
+        const totalProducts = await Product.countDocuments(query);
+
+        res.status(200).json({
+            products,
+            totalPages: Math.ceil(totalProducts / limit),
+            currentPage: page,
+        });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
-})
-
+});
 
 module.exports=
 {   addProduct,

@@ -37,6 +37,8 @@ const addProductTransfer = asyncHandler(async (req, res) => {
             receivedByEmployeeId,
             vehicleNumber,
         });
+        
+        console.log(productTransfer);
 
         res.status(201).json(productTransfer);
     } catch (error) {
